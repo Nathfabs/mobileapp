@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Howl’s Breakfast Feast</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* [RESPONSIVE] Split html/body overflow-x rules.
+       Setting overflow-x: hidden on BOTH html and body triggers an iOS Safari
+       bug where the browser promotes <body> to the scroll container, which
+       then blocks touch scrolling on any child element (e.g. .ingredients-row).
+       Fix: keep overflow-x: hidden only on html (prevents viewport overflow),
+       and remove it from body so iOS uses html as the scroll root instead. */
+    html {
+      overflow-x: hidden;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      color: #222;
+      min-height: 100vh;
+      max-width: 100%;
+      /* overflow-x intentionally omitted — see html rule above */
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* [RESPONSIVE] Global box-sizing prevents padding from pushing elements outside their container */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    /* [RESPONSIVE] All images scale proportionally and never exceed their container */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    /* [RESPONSIVE] Fluid recipe title: scales with viewport, capped at original 2.2rem */
+    .recipe-title-main {
+      font-size: clamp(1.3rem, 5vw, 2.2rem) !important;
+    }
+    .hero {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      max-width: 100vw;
+      height: 270px;
+      overflow: hidden;
+      background: #eee;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      z-index: 100;
+    }
+    .hero-img {
+      width: 100vw;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      min-height: 220px;
+      max-height: 320px;
+    }
+    .hero-overlay {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.38) 100%);
+      z-index: 1;
+    }
+    .hero-btn {
+      position: fixed;
+      top: 24px;
+      left: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, box-shadow 0.2s;
+    }
+    .hero-btn.scrolled {
+      background: rgba(80,80,80,0.18) !important;
+      box-shadow: 0 2px 8px rgba(80,80,80,0.13) !important;
+      z-index: 300;
+    }
+    .hero-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: #222;
+      stroke-width: 2.2;
+      fill: none;
+      display: block;
+      transition: stroke 0.2s;
+    }
+    .hero-btn.back {
+      left: 16px;
+    }
+    .hero-btn.fav {
+      right: 16px;
+    }
+    .hero-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: #222;
+      stroke-width: 2.2;
+      fill: none;
+      display: block;
+    }
+    .hero-btn.fav svg {
+      stroke: #e74c3c;
+      fill: none;
+    }
+    .content {
+      background: #fff;
+      position: relative;
+      z-index: 101;
+      margin-top: 250px;
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -8px 32px 0 rgba(0,0,0,0.13), 0 2px 8px 0 rgba(0,0,0,0.04);
+      padding: 36px 40px 40px 40px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      min-height: 60vh;
+      transition: box-shadow 0.2s;
+    }
+    .section-title {
+      font-family: 'Lexend Deca', Arial, sans-serif;
+      font-size: 1.18rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #222;
+      letter-spacing: 0.01em;
+    }
+    .ingredients-row {
+      display: flex;
+      flex-direction: row;
+      gap: 18px;
+      /* [FIX] overflow-x: scroll is more reliable than auto on iOS Safari —
+         auto can silently collapse the scroll context on some WebKit versions. */
+      overflow-x: scroll;
+      margin-bottom: 28px;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #e0e0e0 #fafafa;
+      /* [FIX] Tell the browser this element handles horizontal panning so iOS
+         does not intercept the gesture for page-level scrolling. */
+      touch-action: pan-x;
+    }
+    .ingredients-row::-webkit-scrollbar {
+      height: 7px;
+      background: #fafafa;
+    }
+    .ingredients-row::-webkit-scrollbar-thumb {
+      background: #e0e0e0;
+      border-radius: 6px;
+    }
+    .ingredient {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 72px;
+      /* [FIX] Prevent flex items from shrinking below min-width, which would
+         make the row appear fully visible and disable the scroll gesture. */
+      flex-shrink: 0;
+    }
+    .ingredient-img {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      background: #f3f3f3;
+      margin-bottom: 7px;
+      border: 2px solid #fff;
+    }
+    .ingredient-name {
+      font-size: 0.93rem;
+      color: #444;
+      margin-top: 0;
+      text-align: center;
+      font-family: 'Lexend Deca', Arial, sans-serif;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .step-num {
+      min-width: 28px;
+      min-height: 28px;
+      background: #222;
+      color: #fff;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      font-size: 1.08rem;
+      font-weight: 600;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+    .step-text {
+      font-size: 1.01rem;
+      color: #222;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      line-height: 1.6;
+    }
+    /* [RESPONSIVE] Mobile ≤600px: full-width hero and content, reduced side padding */
+    @media (max-width: 600px) {
+      .hero-img, .hero {
+        width: 100vw;
+        max-width: 100vw;
+      }
+      .content {
+        max-width: 100vw;
+        border-radius: 24px 24px 0 0;
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      /* [MOBILE FIX] Ingredients row: enable smooth native touch scrolling.
+         -webkit-overflow-scrolling: touch  → momentum/inertia scroll on iOS.
+         overscroll-behavior-x: contain     → stops the page from scrolling
+                                              sideways when the strip reaches
+                                              its end.
+         scroll-snap-type/align             → each pill snaps cleanly into view
+                                              so items never stop half-visible.
+         Extra padding-bottom               → keeps the scrollbar from sitting
+                                              flush against content. */
+      .ingredients-row {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        padding-bottom: 10px;
+        gap: 14px;
+      }
+      .ingredient {
+        scroll-snap-align: start;
+        min-width: 68px;
+      }
+
+      /* [MOBILE FIX] Steps: increase gap between steps, add vertical padding
+         inside each step row, and loosen line-height so longer lines
+         breathe properly on narrow screens. */
+      .steps {
+        gap: 22px;
+      }
+      .step {
+        gap: 12px;
+        padding: 6px 0;
+      }
+      .step-text {
+        font-size: 0.97rem;
+        line-height: 1.75;
+      }
+    }
+    /* [RESPONSIVE] Extra-small mobile ≤430px: minimal horizontal padding */
+    @media (max-width: 430px) {
+      .content {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+    }
+    /* [RESPONSIVE] Tablet ≥768px: taller hero, wider content padding, larger ingredient icons */
+    @media (min-width: 768px) {
+      .hero {
+        height: 320px;
+      }
+      .content {
+        max-width: 700px;
+        margin-top: 290px;
+        padding: 40px 48px 48px 48px;
+      }
+      .ingredient-img {
+        width: 64px;
+        height: 64px;
+      }
+    }
+    /* [RESPONSIVE] Desktop ≥1024px: generous hero height and spacing */
+    @media (min-width: 1024px) {
+      .hero {
+        height: 380px;
+      }
+      .content {
+        max-width: 760px;
+        margin-top: 350px;
+        padding: 48px 56px 56px 56px;
+      }
+      .step-text {
+        font-size: 1.08rem;
+      }
+    }
+  </style>
+</head>
+  <body>
+    <div class="hero">
+      <img class="hero-img" src="image/howlsbreakfast.jpg" alt="Howl’s Breakfast Feast">
+      <div class="hero-overlay"></div>
+      <button class="hero-btn back" id="backBtn" onclick="window.history.back()" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19"/></svg>
+      </button>
+      <!-- Recipe title removed from hero -->
+    </div>
+    <div class="content">
+        <div class="recipe-title-main" style="font-family: 'Lexend Deca', Arial, sans-serif; font-size: 2.2rem; font-weight: 700; color: #222; margin-bottom: 18px; margin-top: 0; letter-spacing: 0.01em; text-align: center;">Howl’s Breakfast Feast</div>
+      <div class="section-title">Ingredients</div>
+      <div class="ingredients-row">
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/bacon.png" alt="Bacon">
+          <div class="ingredient-name">Bacon</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/egg.png" alt="Egg">
+          <div class="ingredient-name">Egg</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/salt.png" alt="Salt">
+          <div class="ingredient-name">Salt</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/pepper.png" alt="Pepper">
+          <div class="ingredient-name">Pepper</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/butter.png" alt="Butter">
+          <div class="ingredient-name">Butter</div>
+        </div>
+      </div>
+      <div class="section-title">Cooking Steps</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Heat a pan over medium heat and place the bacon strips in a single layer.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Cook the bacon slowly, flipping occasionally, until golden and crispy.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Remove the bacon from the pan and set aside, leaving the bacon fat behind.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">Add a small amount of butter to the same pan and let it melt.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-text">Crack the eggs gently into the pan and cook until the whites are set.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-text">Season with salt and pepper, then serve the eggs with the crispy bacon.</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
