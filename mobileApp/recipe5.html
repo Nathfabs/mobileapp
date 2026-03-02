@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiki’s Strawberry Cake</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      color: #222;
+      min-height: 100vh;
+      width: 100vw;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .hero {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      max-width: 100vw;
+      height: 270px;
+      overflow: hidden;
+      background: #eee;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      z-index: 100;
+    }
+    .hero-img {
+      width: 100vw;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      min-height: 220px;
+      max-height: 320px;
+    }
+    .hero-overlay {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.38) 100%);
+      z-index: 1;
+    }
+    .hero-btn {
+      position: fixed;
+      top: 24px;
+      left: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      border: none;
+      cursor: pointer;
+      transition: background 0.25s, box-shadow 0.2s;
+    }
+    .hero-btn.scrolled {
+      background: rgba(80,80,80,0.18) !important;
+      box-shadow: 0 2px 8px rgba(80,80,80,0.13) !important;
+      z-index: 300;
+    }
+    .hero-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: #222;
+      stroke-width: 2.2;
+      fill: none;
+      display: block;
+      transition: stroke 0.2s;
+    }
+    .hero-btn.back {
+      left: 16px;
+    }
+    .hero-btn.fav {
+      right: 16px;
+    }
+    .hero-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: #222;
+      stroke-width: 2.2;
+      fill: none;
+      display: block;
+    }
+    .hero-btn.fav svg {
+      stroke: #e74c3c;
+      fill: none;
+    }
+    .content {
+      background: #fff;
+      position: relative;
+      z-index: 101;
+      margin-top: 250px;
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -8px 32px 0 rgba(0,0,0,0.13), 0 2px 8px 0 rgba(0,0,0,0.04);
+      padding: 36px 40px 40px 40px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      min-height: 60vh;
+      transition: box-shadow 0.2s;
+    }
+    .section-title {
+      font-family: 'Lexend Deca', Arial, sans-serif;
+      font-size: 1.18rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #222;
+      letter-spacing: 0.01em;
+    }
+    .ingredients-row {
+      display: flex;
+      flex-direction: row;
+      gap: 18px;
+      overflow-x: auto;
+      margin-bottom: 28px;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #e0e0e0 #fafafa;
+    }
+    .ingredients-row::-webkit-scrollbar {
+      height: 7px;
+      background: #fafafa;
+    }
+    .ingredients-row::-webkit-scrollbar-thumb {
+      background: #e0e0e0;
+      border-radius: 6px;
+    }
+    .ingredient {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 72px;
+    }
+    .ingredient-img {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      background: #f3f3f3;
+      margin-bottom: 7px;
+      border: 2px solid #fff;
+    }
+    .ingredient-name {
+      font-size: 0.93rem;
+      color: #444;
+      margin-top: 0;
+      text-align: center;
+      font-family: 'Lexend Deca', Arial, sans-serif;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .step-num {
+      min-width: 28px;
+      min-height: 28px;
+      background: #222;
+      color: #fff;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      font-size: 1.08rem;
+      font-weight: 600;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+    .step-text {
+      font-size: 1.01rem;
+      color: #222;
+        font-family: 'Lexend Deca', Arial, sans-serif;
+      line-height: 1.6;
+    }
+    @media (max-width: 600px) {
+      .hero-img, .hero {
+        width: 100vw;
+        max-width: 100vw;
+      }
+      .content {
+        max-width: 100vw;
+        border-radius: 24px 24px 0 0;
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+    }
+    @media (max-width: 430px) {
+      .content {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+    }
+  </style>
+</head>
+  <body>
+    <div class="hero">
+      <img class="hero-img" src="image/kikisstrawberrycake.jpg" alt="Kiki’s Strawberry Cake">
+      <div class="hero-overlay"></div>
+      <button class="hero-btn back" id="backBtn" onclick="window.history.back()" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19"/></svg>
+      </button>
+      <!-- Recipe title removed from hero -->
+    </div>
+    <div class="content">
+        <div class="recipe-title-main" style="font-family: 'Lexend Deca', Arial, sans-serif; font-size: 2.2rem; font-weight: 700; color: #222; margin-bottom: 18px; margin-top: 0; letter-spacing: 0.01em; text-align: center;">Kiki’s Strawberry Cake</div>
+      <div class="section-title">Ingredients</div>
+      <div class="ingredients-row">
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/sponge cake.webp" alt="Sponge cake base">
+          <div class="ingredient-name">Sponge cake base</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/cocoa powder.webp" alt="Cocoa powder">
+          <div class="ingredient-name">Cocoa powder</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/melted chocolate.png" alt="Melted chocolate">
+          <div class="ingredient-name">Melted chocolate</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/butter.png" alt="Butter">
+          <div class="ingredient-name">Butter</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/sugar.png" alt="Sugar">
+          <div class="ingredient-name">Sugar</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/egg.png" alt="Eggs">
+          <div class="ingredient-name">Eggs</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/flour.png" alt="Flour">
+          <div class="ingredient-name">Flour</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/whipped cream.png" alt="Whipped cream">
+          <div class="ingredient-name">Whipped cream</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/chocolate frosting.png" alt="Chocolate frosting">
+          <div class="ingredient-name">Chocolate frosting</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/strawberries.jpg" alt="Strawberries">
+          <div class="ingredient-name">Strawberries</div>
+        </div>
+        <div class="ingredient">
+          <img class="ingredient-img" src="image/white chocolate.png" alt="White chocolate">
+          <div class="ingredient-name">White chocolate</div>
+        </div>
+      </div>
+      <div class="section-title">Cooking Steps</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Preheat the oven to 180°C (350°F) and prepare a round cake pan by lightly greasing it with butter and lining it with parchment paper.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">In a mixing bowl, combine ½ cup softened butter and ¾ cup sugar, then mix until light and creamy.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Add 2 eggs, one at a time, mixing well after each addition.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">Stir in ½ cup melted chocolate or cocoa mixture to give the cake its rich chocolate flavor.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-text">Gradually fold in 1 cup flour and mix until the batter becomes smooth and thick.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-text">Pour the batter into the prepared cake pan and bake for 30–35 minutes, or until a toothpick inserted in the center comes out clean.</div>
+        </div>
+          <div class="step">
+          <div class="step-num">7</div>
+          <div class="step-text">Allow the cake to cool completely before decorating.</div>
+        </div>
+          <div class="step">
+          <div class="step-num">8</div>
+          <div class="step-text">Spread a smooth layer of chocolate frosting or whipped cream over the entire cake to create the dark surface seen in Kiki’s cake.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">9</div>
+          <div class="step-text">Melt white chocolate or prepare white icing, then carefully pipe or draw Kiki’s silhouette and lettering on top of the cake.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">10</div>
+          <div class="step-text">Decorate lightly with small strawberry accents if desired, then chill the cake for 20–30 minutes before serving.</div>
+        </div>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
